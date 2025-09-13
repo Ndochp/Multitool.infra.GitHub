@@ -1,7 +1,7 @@
 # This script sets up and runs a GitHub Actions runner on Windows
 
 param(
-    [string]$RepoUrl = "https://github.com/OWNER/REPO",
+    [string]$RepoUrl = "https://github.com/ndochp/Multitool.infra.GitHub",
     [string]$RunnerName = "local-runner",
     [string]$Labels = "self-hosted,windows"
 )
