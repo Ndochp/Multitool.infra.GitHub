@@ -1,0 +1,39 @@
+name: Build Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'The GitHub repository to build (e.g., owner/repo)'
+        required: true
+        default: 'ndochp/multitool'
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repository }}
+          path: source-code
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: |
+          cd source-code
+          npm install
+
+      - name: Run build
+        run: |
+          cd source-code
+          npm run build
+
+      - name: Run tests
+        run: |
+          cd source-code
+          npm test
