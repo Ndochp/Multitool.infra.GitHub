@@ -4,36 +4,70 @@ on:
   workflow_dispatch:
     inputs:
       repository:
-        description: 'The GitHub repository to build (e.g., owner/repo)'
-        required: true
-        default: 'ndochp/multitool'
+        description: 'GitHub repository to build (owner/repo). Overrides APP_REPOSITORY variable.'
+        required: false
+        default: ''
+
+env:
+  SOURCE_PATH: source-code
 
 jobs:
   build:
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Resolve target repository
+        id: repo
+        run: |
+          if [ -n "${{ github.event.inputs.repository }}" ]; then
+            echo "repository=${{ github.event.inputs.repository }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ vars.APP_REPOSITORY }}" ]; then
+            echo "repository=${{ vars.APP_REPOSITORY }}" >> $GITHUB_OUTPUT
+          else
+            echo "repository=ndochp/multitool" >> $GITHUB_OUTPUT
+          fi
+          echo "Resolved repository: $(cat $GITHUB_OUTPUT | grep repository | cut -d= -f2-)"
+
+      - name: Checkout application repository
+        uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.inputs.repository }}
-          path: source-code
+          repository: ${{ steps.repo.outputs.repository }}
+          token: ${{ secrets.GITHUB_PAT }}
+          path: ${{ env.SOURCE_PATH }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install dependencies
+      - name: Build (1C)
+        env:
+          ONE_C_PATH: ${{ vars.ONE_C_PATH }}
+          TEST_DATABASE_PATH: ${{ vars.TEST_DATABASE_PATH }}
         run: |
-          cd source-code
-          npm install
+          cd ${{ env.SOURCE_PATH }}
+          if [ -f scripts/build.sh ]; then
+            chmod +x scripts/build.sh
+            ./scripts/build.sh
+          elif [ -n "$ONE_C_PATH" ] && [ -x "$ONE_C_PATH" ]; then
+            echo "Using ONE_C_PATH for build (customize step as needed)"
+            # Example EDT: "$ONE_C_PATH" build ...
+            # Example Designer batch: "$ONE_C_PATH" DESIGNER /DumpCfg ...
+            exit 0
+          else
+            echo "No scripts/build.sh and ONE_C_PATH not set or not executable. Skipping build."
+          fi
 
-      - name: Run build
+      - name: Run tests (1C)
+        env:
+          ONE_C_PATH: ${{ vars.ONE_C_PATH }}
+          TEST_DATABASE_PATH: ${{ vars.TEST_DATABASE_PATH }}
         run: |
-          cd source-code
-          npm run build
-
-      - name: Run tests
-        run: |
-          cd source-code
-          npm test
+          cd ${{ env.SOURCE_PATH }}
+          if [ -f scripts/test.sh ]; then
+            chmod +x scripts/test.sh
+            ./scripts/test.sh
+          elif [ -n "$ONE_C_PATH" ] && [ -x "$ONE_C_PATH" ]; then
+            echo "Using ONE_C_PATH for tests (customize step as needed)"
+            # Example: xUnitFor1C, EDT test runner
+            exit 0
+          else
+            echo "No scripts/test.sh and ONE_C_PATH not set. Skipping tests."
+          fi

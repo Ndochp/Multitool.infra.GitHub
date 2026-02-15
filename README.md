@@ -1,77 +1,71 @@
-# GitHub Actions Build Pipeline
+# Multitool.infra.GitHub — CI-инфраструктура для 1С конфигураций
 
-This project sets up a GitHub Actions build pipeline using a local runner. It allows you to build and test your code from a specified GitHub repository.
+Репозиторий содержит **инфраструктуру CI** для сборки и тестирования репозиториев с конфигурациями 1С. Он отделён от репозитория приложения и может переиспользоваться для разных проектов 1С.
 
-## Project Structure
+**Репозиторий приложения (1С конфигурация):** [Ndochp/multitool](https://github.com/Ndochp/multitool)
+
+Архитектура разделения описана в [DOC/Architecture.md](DOC/Architecture.md).
+
+## Роль репозитория
+
+- Workflow'ы GitHub Actions для сборки, тестов и релизов
+- Скрипты настройки self-hosted runner (локальный исполнитель)
+- Документация по настройке и контракту с репо приложения
+
+Репозиторий приложения содержит только код 1С, тесты и описание архитектуры — без привязки к конкретному CI. Разработчик форкает оба репо, настраивает секреты и получает CI/MR-тесты и релизные артефакты.
+
+## Структура проекта
 
 ```
-github-actions-build-pipeline
+Multitool.infra.GitHub
 ├── .github
 │   └── workflows
-│       └── build-pipeline.yml
+│       ├── build-pipeline.yml   # Сборка и тесты
+│       └── release.yml          # Создание релиза и артефактов
+├── DOC
+│   └── Architecture.md         # Архитектура изоляции репо
 ├── scripts
-│   ├── run-local-runner.sh
-│   └── run-local-runner.ps1
-├── src
-│   └── index.js
-├── package.json
+│   ├── run-local-runner.sh      # Установка runner (Linux/macOS)
+│   └── run-local-runner.ps1     # Установка runner (Windows)
 └── README.md
 ```
 
-## Getting Started
+## Настройка (fork)
 
-### Prerequisites
+### 1. Форк репозиториев
 
-- Ensure you have a GitHub account and access to the repository you want to build.
-- Install Node.js and npm on your local machine.
-- Set up a local GitHub Actions runner.
+- Сделайте fork [Multitool.infra.GitHub](https://github.com/Ndochp/Multitool.infra.GitHub) (этот репо).
+- Сделайте fork [Ndochp/multitool](https://github.com/Ndochp/multitool) (репо приложения), если собираетесь собирать его.
 
-### Setup Instructions
+### 2. Секреты и переменные
 
-1. **Clone the Repository**
+В вашем fork **Multitool.infra.GitHub**: Settings → Secrets and variables → Actions.
 
-   Clone this repository to your local machine:
+| Имя               | Описание |
+| ----------------- | -------- |
+| `GITHUB_PAT`      | Personal Access Token (repo) для checkout репо приложения |
+| `APP_REPOSITORY`  | Переменная (или в workflow): `owner/repo` целевого репо приложения |
 
-   ```
-   git clone https://github.com/your-username/github-actions-build-pipeline.git
-   ```
+### 3. Self-hosted runner
 
-2. **Configure the Local Runner**
+На машине, где будет выполняться сборка^
 
-   Navigate to the `scripts` directory and run the setup script for your platform:
+- **Windows:** из корня репо выполните `.\scripts\run-local-runner.ps1` (при необходимости передайте URL репо и задайте `GITHUB_PAT` в окружении).
+- **Linux/macOS:** `./scripts/run-local-runner.sh <repository-url>` (например `https://github.com/your-org/Multitool.infra.GitHub`). Требуется `GITHUB_PAT` в окружении для получения токена регистрации.
 
-   - **Linux/macOS:**
-     ```
-     cd github-actions-build-pipeline/scripts
-     ./run-local-runner.sh
-     ```
-   - **Windows:**
-     ```
-     cd github-actions-build-pipeline\scripts
-     .\run-local-runner.ps1
-     ```
+Кроме того, должна быть уставновлена платформа 1С, oscript пакеты add, vanessa runner. Команды oscript должны запускаться без указания пути (прописаны в PATH)
 
-3. **Modify the Workflow File**
+Подробнее см. комментарии в скриптах и [DOC/Architecture.md](DOC/Architecture.md).
 
-   Update the `.github/workflows/build-pipeline.yml` file to specify the source code repository you want to build. Make sure the repository is accessible to your GitHub account.
+### 4. Запуск
 
-4. **Install Dependencies**
+- Вкладка **Actions** → выберите workflow **Build Pipeline** (или **Release**) → **Run workflow**. Укажите репозиторий приложения, если запрашивается.
+- Workflow выполняется на self-hosted runner, клонирует репо приложения и запускает сборку/тесты по контракту (EDT или Designer batch, скрипты из репо приложения).
 
-   Navigate back to the root of the project and install the necessary dependencies:
+## Контракт с репозиторием приложения
 
-   ```
-   cd ..
-   npm install
-   ```
+Репо приложения должен иметь ожидаемую структуру (пока согласно vanessa bootstrap, потом возможно будут предусмотрены конфигурационные файлы) и при необходимости скрипты/конфигурации для тестов. Подробнее — в [DOC/Architecture.md](DOC/Architecture.md), раздел «Контракт между репозиториями».
 
-### Usage
+## Лицензия
 
-To trigger the build pipeline, push changes to the specified repository or manually trigger the workflow from the GitHub Actions tab in your repository.
-
-### Contributing
-
-Feel free to submit issues or pull requests if you have suggestions or improvements for this project.
-
-### License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
+MIT.
