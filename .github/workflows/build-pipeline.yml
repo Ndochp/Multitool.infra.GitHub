@@ -18,6 +18,14 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Verify secret GH_PAT is available
+        run: |
+          if [[ -z "${{ secrets.GH_PAT }}" ]]; then
+            echo "❌ SECRET GH_PAT IS NOT SET OR EMPTY"
+            exit 1
+          else
+            echo "✅ Secret GH_PAT is set (value hidden)"
+          fi
       - name: Resolve target repository
         id: repo
         run: |
@@ -34,7 +42,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ steps.repo.outputs.repository }}
-          token: ${{ secrets.GITHUB_PAT }}
+          token: ${{ secrets.GH_PAT }}
           path: ${{ env.SOURCE_PATH }}
 
       # - name: Build (1C)
