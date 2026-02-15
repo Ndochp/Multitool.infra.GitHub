@@ -37,37 +37,37 @@ jobs:
           token: ${{ secrets.GITHUB_PAT }}
           path: ${{ env.SOURCE_PATH }}
 
-      - name: Build (1C)
-        env:
-          ONE_C_PATH: ${{ vars.ONE_C_PATH }}
-          TEST_DATABASE_PATH: ${{ vars.TEST_DATABASE_PATH }}
-        run: |
-          cd ${{ env.SOURCE_PATH }}
-          if [ -f scripts/build.sh ]; then
-            chmod +x scripts/build.sh
-            ./scripts/build.sh
-          elif [ -n "$ONE_C_PATH" ] && [ -x "$ONE_C_PATH" ]; then
-            echo "Using ONE_C_PATH for build (customize step as needed)"
-            # Example EDT: "$ONE_C_PATH" build ...
-            # Example Designer batch: "$ONE_C_PATH" DESIGNER /DumpCfg ...
-            exit 0
-          else
-            echo "No scripts/build.sh and ONE_C_PATH not set or not executable. Skipping build."
-          fi
+      # - name: Build (1C)
+      #   env:
+      #     ONE_C_PATH: ${{ vars.ONE_C_PATH }}
+      #     TEST_DATABASE_PATH: ${{ vars.TEST_DATABASE_PATH }}
+      #   run: |
+      #     cd ${{ env.SOURCE_PATH }}
+      #     if [ -f scripts/build.sh ]; then
+      #       chmod +x scripts/build.sh
+      #       ./scripts/build.sh
+      #     elif [ -n "$ONE_C_PATH" ] && [ -x "$ONE_C_PATH" ]; then
+      #       echo "Using ONE_C_PATH for build (customize step as needed)"
+      #       # Example EDT: "$ONE_C_PATH" build ...
+      #       # Example Designer batch: "$ONE_C_PATH" DESIGNER /DumpCfg ...
+      #       exit 0
+      #     else
+      #       echo "No scripts/build.sh and ONE_C_PATH not set or not executable. Skipping build."
+      #     fi
 
-      - name: Run tests (1C)
-        env:
-          ONE_C_PATH: ${{ vars.ONE_C_PATH }}
-          TEST_DATABASE_PATH: ${{ vars.TEST_DATABASE_PATH }}
-        run: |
-          cd ${{ env.SOURCE_PATH }}
-          if [ -f scripts/test.sh ]; then
-            chmod +x scripts/test.sh
-            ./scripts/test.sh
-          elif [ -n "$ONE_C_PATH" ] && [ -x "$ONE_C_PATH" ]; then
-            echo "Using ONE_C_PATH for tests (customize step as needed)"
-            # Example: xUnitFor1C, EDT test runner
-            exit 0
-          else
-            echo "No scripts/test.sh and ONE_C_PATH not set. Skipping tests."
-          fi
+      # - name: Run tests (1C)
+      #   env:
+      #     ONE_C_PATH: ${{ vars.ONE_C_PATH }}
+      #     TEST_DATABASE_PATH: ${{ vars.TEST_DATABASE_PATH }}
+      #   run: |
+      #     cd ${{ env.SOURCE_PATH }}
+      #     if [ -f scripts/test.sh ]; then
+      #       chmod +x scripts/test.sh
+      #       ./scripts/test.sh
+      #     elif [ -n "$ONE_C_PATH" ] && [ -x "$ONE_C_PATH" ]; then
+      #       echo "Using ONE_C_PATH for tests (customize step as needed)"
+      #       # Example: xUnitFor1C, EDT test runner
+      #       exit 0
+      #     else
+      #       echo "No scripts/test.sh and ONE_C_PATH not set. Skipping tests."
+      #     fi

@@ -43,9 +43,8 @@ flowchart TB
 
 | Элемент                  | Описание                                                                                                                               |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **Структура проекта**    | Стандартная структура EDT (`.project`, `src/`) или структура выгрузки 1С (XML)                                                         |
-| **Команды/скрипты**      | Опционально: скрипты `test`, `build` в корне или `scripts/`, вызываемые из CI. Либо документация команд (EDT CLI, Designer batch mode) |
-| **Переменные окружения** | Список необходимых: путь к 1C/EDT, учётные данные, путь к тестовой БД                                                                  |
+| **Структура проекта**    | Стандартная структура Vanessa bootstrap 
+| **Переменные окружения** | Список необходимых: учётные данные административного, тестовых пользователей БД                                                                  |
 
 Рекомендуемый документ в репо приложения: `CONTRIBUTING.md` или `docs/CI-contract.md` с описанием этого интерфейса (CI-агностично).
 
@@ -72,15 +71,13 @@ flowchart TB
 
 - `APP_REPOSITORY` — целевой репо (по умолчанию ndochp/multitool)
 - `GITHUB_PAT` — Personal Access Token для checkout приватного репо
-- `ONE_C_PATH` — путь к 1C:Enterprise или EDT
-- `TEST_DATABASE_PATH` — путь к тестовой БД (если используется file-based IB)
 
 ### 4.4 Адаптация под 1С
 
 Workflow рассчитан на 1С:
 
-1. **Сборка**: EDT CLI (`edt build`) или Designer batch (`1cv8 DESIGNER /DumpCfg`, `/LoadCfg` и т.п.)
-2. **Тесты**: xUnitFor1C (xddTestRunner.epf) или EDT test runner
+1. **Сборка**: vanessa runner + add пакеты OSCRIPT
+2. **Тесты**: add пускатель адд тестов или ванессы, яксюнит
 3. **Артефакты**: выгрузка в XML/DT, публикация Release через `actions/create-release`, `actions/upload-release-asset`
 
 Workflow вызывает скрипты/команды по контракту репо приложения или использует параметризованные шаги.
@@ -88,7 +85,7 @@ Workflow вызывает скрипты/команды по контракту 
 ## 5. Сценарий настройки для разработчика
 
 1. Fork `Ndochp/multitool` (app) и fork `Multitool.infra.GitHub` (infra)
-2. В infra repo: Settings → Secrets and variables → Actions: задать `GITHUB_PAT`, `ONE_C_PATH` и т.д.
+2. В infra repo: Settings → Secrets and variables → Actions: задать `GITHUB_PAT` и т.д.
 3. В workflow infra repo задать `APP_REPOSITORY: your-org/your-multitool-fork` (или через переменную/секрет)
 4. Установить self-hosted runner для infra repo (через `scripts/run-local-runner.ps1` или `.sh`)
 5. Запускать workflow вручную или по расписанию; при необходимости — добавить триггер из app repo
